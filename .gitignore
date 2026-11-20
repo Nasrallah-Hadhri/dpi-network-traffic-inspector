@@ -1,0 +1,46 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Local databases (users, alerts, rules, blocked packets)
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Generated reports
+alerts_report_*.csv
+blocked_packets_report_*.csv
+rules_report_*.csv
+dpi_report_*.txt
+
+# Captures and archives
+*.pcap
+*.pcapng
+*.rar
+*.zip
+*.mp4
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Misc
+node_modules/
+certs/
+.claude/
+.vscode/
+.idea/
+~$*
+*.swp
+.DS_Store
+Thumbs.db

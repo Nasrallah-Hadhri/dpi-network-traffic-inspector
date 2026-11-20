@@ -1,0 +1,116 @@
+
+            GUIDE D'EXÉCUTION : SYSTÈME DPI SUR WINDOWS 11 (WSL KALI)
+
+
+Ce document explique comment configurer, lancer et utiliser le système de Deep Packet 
+Inspection (DPI) sur Windows 11 en utilisant WSL2 avec la distribution Kali Linux.
+
+Le système DPI est une solution complète de surveillance réseau en temps réel, 
+capable de détecter des signatures malveillantes et de bloquer automatiquement 
+le trafic suspect grâce à l'utilisation de Python, Scapy et NFQUEUE.
+
+
+1. FONCTIONNALITÉS PRINCIPALES
+==============================
+
+* Capture de paquets en temps réel via NFQUEUE et Scapy.
+* Inspection approfondie (DPI) utilisant des signatures, des expressions régulières (Regex) et la détection de protocoles.
+* Blocage automatique des paquets malveillants selon des règles configurables.
+* Gestion des utilisateurs avec authentification sécurisée (Rôles USER et ADMIN).
+* Interface graphique (GUI) moderne et professionnelle (thème sombre) avec Tkinter.
+* Journalisation complète des alertes et des paquets bloqués dans une base SQLite.
+* Exportation de rapports aux formats CSV et TXT.
+
+
+2. PRÉREQUIS SYSTÈME
+====================
+
+* Windows 11 avec WSL2 installé.
+* Distribution Kali Linux (recommandée) installée.
+* Serveur X (Intégré par défaut dans Windows 11 via WSLg) pour l'affichage de l'interface.
+* Privilèges Root/Sudo (indispensables pour NFQUEUE).
+
+
+3. INSTALLATION DES DÉPENDANCES (DANS KALI)
+===========================================
+
+Ouvrez votre terminal Kali et installez les outils nécessaires :
+
+```bash
+sudo apt update
+sudo apt install -y python3-pip python3-dev python3-tk libnetfilter-queue-dev build-essential
+```
+
+Allez ensuite dans le dossier du projet et installez les bibliothèques Python :
+
+```bash
+cd /chemin/vers/dpi-network-traffic-inspector/dpi
+pip install -r requirements.txt
+```
+Note : Si une erreur "externally-managed-environment" apparaît, utilisez la commande suivante :
+`pip install scapy netfilterqueue pandas bcrypt --break-system-packages`
+
+
+4. CONFIGURATION RÉSEAU (IPTABLES)
+==================================
+
+Le système intercepte le trafic via une file d'attente NFQUEUE. Vous devez
+rediriger les paquets réseaux vers cette file avant de lancer l'application :
+
+```bash
+sudo chmod +x setup_iptables.sh
+sudo ./setup_iptables.sh
+```
+
+Cette configuration redirige tout le trafic (INPUT, OUTPUT, FORWARD) vers la 
+file d'attente numéro 0 gérée par le moteur DPI.
+
+
+5. UTILISATION DE L'APPLICATION
+===============================
+
+Lancement (obligatoirement en sudo) :
+```bash
+sudo -E python3 main.py
+```
+
+Première connexion :
+- Identifiant : valeur de DPI_ADMIN_USERNAME (par défaut : admin)
+- Mot de passe : valeur de DPI_ADMIN_PASSWORD ; si elle n'est pas définie, un mot de
+  passe aléatoire est généré et affiché une seule fois dans le terminal au premier lancement.
+  Exemple : sudo DPI_ADMIN_PASSWORD='...' python3 main.py
+
+Interface Administrateur :
+- Gérer les règles DPI (Ajout/Suppression de signatures ou regex).
+- Gérer les comptes utilisateurs.
+- Activer/Désactiver le blocage automatique.
+- Exporter les rapports d'activité.
+
+
+6. MÉTHODES DE DÉTECTION DPI
+============================
+
+1. Détection par Signature : Recherche de motifs malveillants connus dans le contenu des paquets.
+2. Expressions Régulières (Regex) : Détection flexible (ex: domaines suspects, motifs complexes).
+3. Analyse de Protocoles : Inspection des entêtes HTTP, DNS, FTP, SMTP, SSH et détection de ports anormaux.
+4. Règles Personnalisées : L'administrateur peut définir ses propres critères de filtrage.
+
+
+7. SÉCURITÉ ET DONNÉES
+======================
+
+* Authentification : Mots de passe hachés avec la bibliothèque bcrypt.
+* Base de données : SQLite (`dpi.db`) stocke les utilisateurs, les alertes, les règles et l'historique des blocages.
+* Contrôle d'accès : Distinction stricte entre les rôles USER (lecture seule/surveillance) et ADMIN (configuration complète).
+
+
+8. RÉSOLUTION DES PROBLÈMES
+===========================
+
+* "Permission Denied" : Assurez-vous de lancer `main.py` avec `sudo`.
+* "Failed to bind to NFQUEUE" : Vérifiez que `setup_iptables.sh` a bien été exécuté.
+* Aucun paquet capturé : Vérifiez l'état d'iptables avec `sudo iptables -L -n -v`.
+* Interface manquante : Vérifiez que WSLg est actif (Windows 11 à jour).
+* Réinitialisation réseau : Pour supprimer toutes les règles d'interception et restaurer le réseau, faites : `sudo iptables -F`.
+
+================================================================================
